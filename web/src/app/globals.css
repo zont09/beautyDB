@@ -1,0 +1,251 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─── */
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-surface: #111118;
+  --bg-panel: #16161e;
+  --bg-elevated: #1e1e28;
+  --border: #2a2a38;
+  --border-hover: #3a3a50;
+
+  --accent-primary: #00e5a0;
+  --accent-secondary: #00bfff;
+  --accent-warning: #ff9500;
+  --accent-error: #ff4466;
+  --accent-success: #00e5a0;
+
+  --line-one-one: #00bfff;
+  --line-one-many: #00e5a0;
+  --line-many-many: #ff9500;
+
+  --text-primary: #f0f0f8;
+  --text-secondary: #9090b0;
+  --text-muted: #5a5a7a;
+
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 20px rgba(0, 229, 160, 0.15);
+
+  --bg-table: rgba(20, 20, 26, 0.85);
+  --border-table: rgba(255, 255, 255, 0.06);
+  --shadow-table: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  --bg-table-hover: rgba(255, 255, 255, 0.03);
+  --bg-table-badge: rgba(0, 0, 0, 0.2);
+  --bg-main-header: rgba(22, 22, 30, 0.9);
+}
+
+[data-theme='light'] {
+  --bg-primary: #f2f2f7;
+  --bg-surface: #ffffff;
+  --bg-panel: #fcfcfc;
+  --bg-elevated: #ffffff;
+  --border: #e5e5ea;
+  --border-hover: #c7c7cc;
+
+  --accent-primary: #00b87c;
+  --accent-secondary: #007aff;
+  --accent-warning: #ff9500;
+  --accent-error: #ff3b30;
+  --accent-success: #34c759;
+
+  --line-one-one: #007aff;
+  --line-one-many: #00b87c;
+  --line-many-many: #ff9500;
+
+  --text-primary: #1c1c1e;
+  --text-secondary: #636366;
+  --text-muted: #8e8e93;
+
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-glow: 0 0 20px rgba(0, 184, 124, 0.15);
+
+  --bg-table: rgba(255, 255, 255, 0.85);
+  --border-table: rgba(0, 0, 0, 0.04);
+  --shadow-table: 0 8px 30px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+  --bg-table-hover: rgba(0, 0, 0, 0.02);
+  --bg-table-badge: rgba(0, 0, 0, 0.04);
+  --bg-main-header: rgba(255, 255, 255, 0.9);
+}
+
+/* ─── Reset ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-panel); }
+::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(0, 229, 160, 0.25);
+  color: var(--text-primary);
+}
+
+/* ─── Utility ─── */
+.font-mono { font-family: var(--font-mono); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  background: var(--bg-panel);
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+  border-color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #00ffb3;
+  border-color: #00ffb3;
+  color: var(--bg-primary);
+  box-shadow: 0 0 16px rgba(0, 229, 160, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+
+/* ─── Panel shared ─── */
+.panel {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* ─── Badge ─── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badge-green { background: rgba(0, 229, 160, 0.15); color: var(--accent-primary); }
+.badge-blue  { background: rgba(0, 191, 255, 0.15); color: var(--accent-secondary); }
+.badge-orange{ background: rgba(255, 149, 0, 0.15); color: var(--accent-warning); }
+.badge-red   { background: rgba(255, 68, 102, 0.15); color: var(--accent-error); }
+
+/* ─── React Flow overrides ─── */
+.react-flow__background { background: var(--bg-primary) !important; }
+
+.react-flow__minimap {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.react-flow__controls {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-secondary) !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-panel) !important;
+  color: var(--text-primary) !important;
+}
+
+.react-flow__edge-path {
+  stroke-width: 1.5;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 160, 0); }
+  50% { box-shadow: 0 0 12px 2px rgba(0, 229, 160, 0.3); }
+}
+
+.animate-in { animation: fadeIn 0.2s ease forwards; }
+.animate-pulse-glow { animation: pulse-glow 2s ease infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; }
+}

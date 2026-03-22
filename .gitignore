@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+web/node_modules/
+.pnp
+.pnp.js
+
+# Testing
+web/coverage/
+
+# Next.js
+web/.next/
+web/out/
+web/build/
+
+# Misc
+.DS_Store
+*.pem
+*.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local Env Files
+web/.env*.local
+
+# Vercel
+web/.vercel/
+
+# TypeScript
+web/tsconfig.tsbuildinfo
+
+# Project specific
+.features/
+.agent/
+brain/
