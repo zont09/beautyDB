@@ -1,4 +1,6 @@
 import { Schema, ColType, Modifier } from '@/lib/types/schema'
+export { exportToDrawIO } from './drawio'
+export { generateDocxReport } from './report'
 
 type SQLDialect = 'postgresql' | 'mysql' | 'sqlite'
 

@@ -4,13 +4,17 @@ import { useState } from 'react'
 import { SchemaEditor } from '@/components/editor/SchemaEditor'
 import { ERDCanvas } from '@/components/canvas/ERDCanvas'
 import { EnumView } from '@/components/canvas/EnumView'
-import { Database, ListTree, Sun, Moon, Download, Image as ImageIcon } from 'lucide-react'
+import { Database, ListTree, Sun, Moon, Download, Image as ImageIcon, FileText, Share2 } from 'lucide-react'
 import { toPng, toSvg } from 'html-to-image'
+import { exportToSQL, exportToBDL, exportToPrisma, exportToDrawIO, generateDocxReport } from '@/lib/exporters'
+import { useSchemaStore } from '@/lib/store/schema-store'
+import { saveAs } from 'file-saver'
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState<'tables' | 'enums'>('tables')
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const { schema, setRawInput, rawInput } = useSchemaStore()
 
   const toggleTheme = () => {
     const t = theme === 'dark' ? 'light' : 'dark'
@@ -18,25 +22,60 @@ export default function Page() {
     document.documentElement.setAttribute('data-theme', t)
   }
 
-  const handleExport = async (format: 'png' | 'svg') => {
+  const handleExport = async (format: 'png' | 'svg' | 'drawio' | 'report') => {
+    console.log(`[beautyDB] Starting export: ${format}`)
     const el = document.querySelector('.react-flow') as HTMLElement
-    if (!el) {
-      alert("No canvas found to export")
+    setShowExportMenu(false)
+
+    if (!el && (format === 'png' || format === 'svg' || format === 'report')) {
+      alert("Canvas element not found. Please make sure the diagram is visible.")
       return
     }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const baseFilename = `beautyDB-schema-${timestamp}`
+
     try {
-      const dataUrl = await (format === 'png' ? toPng : toSvg)(el, {
-        backgroundColor: theme === 'dark' ? '#0a0a0f' : '#f2f2f7',
-        pixelRatio: 2, // high quality
-      })
-      const a = document.createElement('a')
-      a.href = dataUrl
-      a.download = `beautydb-${activeTab}.${format}`
-      a.click()
-      setShowExportMenu(false)
+      if (format === 'png' || format === 'svg') {
+        console.log(`[beautyDB] Generating ${format}...`)
+        await new Promise(r => setTimeout(r, 200))
+
+        const dataUrl = await (format === 'png' ? toPng : toSvg)(el, {
+          backgroundColor: theme === 'dark' ? '#0a0a0f' : '#f2f2f7',
+          pixelRatio: 2,
+          cacheBust: true,
+          style: {
+            transform: 'scale(1)',
+            width: el.offsetWidth + 'px',
+            height: el.offsetHeight + 'px',
+          }
+        })
+
+        if (!dataUrl || dataUrl.length < 500) {
+          throw new Error("Export failed: The generated image is empty or invalid.")
+        }
+
+        saveAs(dataUrl, `${baseFilename}.${format}`)
+        console.log(`[beautyDB] ${format} download triggered via file-saver.`)
+      } else if (format === 'drawio') {
+        console.log(`[beautyDB] Generating drawio XML...`)
+        const xml = exportToDrawIO(schema)
+        const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' })
+        saveAs(blob, `${baseFilename}.drawio.xml`)
+        console.log(`[beautyDB] drawio download triggered via file-saver.`)
+      } else if (format === 'report') {
+        console.log(`[beautyDB] Generating DOCX report...`)
+        const diagramPng = await toPng(el, {
+          backgroundColor: theme === 'dark' ? '#0a0a0f' : '#f2f2f7',
+          pixelRatio: 1.5,
+        })
+        const docxBlob = await generateDocxReport(schema, diagramPng)
+        saveAs(docxBlob, `${baseFilename}-Report.docx`)
+        console.log(`[beautyDB] DOCX report download triggered via file-saver.`)
+      }
     } catch (e) {
-      console.error(e)
-      alert("Failed to export diagram.")
+      console.error("[beautyDB] Export Error:", e)
+      alert("Failed to export: " + (e instanceof Error ? e.message : String(e)))
     }
   }
 
@@ -89,14 +128,27 @@ export default function Page() {
               
               {showExportMenu && (
                 <div 
-                  className="absolute right-0 top-full mt-2 w-32 rounded-lg py-1 z-50 shadow-2xl animate-in"
+                  className="absolute right-0 top-full mt-2 w-48 rounded-lg py-2 z-50 shadow-2xl animate-in"
                   style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)' }}
                 >
+                  <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Image</div>
                   <button onClick={() => handleExport('png')} className="w-full text-left px-3 py-1.5 transition-colors text-[12px] flex items-center gap-2 hover:bg-[var(--bg-elevated)]" style={{ color: 'var(--text-primary)' }}>
-                    <ImageIcon size={12} /> Save PNG
+                    <ImageIcon size={14} className="text-[#00e5a0]" /> Save PNG
                   </button>
                   <button onClick={() => handleExport('svg')} className="w-full text-left px-3 py-1.5 transition-colors text-[12px] flex items-center gap-2 hover:bg-[var(--bg-elevated)]" style={{ color: 'var(--text-primary)' }}>
-                    <ImageIcon size={12} /> Save SVG
+                    <ImageIcon size={14} className="text-[#00bfff]" /> Save SVG
+                  </button>
+                  
+                  <div className="h-px bg-white/5 my-1 mx-2" />
+                  <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Diagram Tools</div>
+                  <button onClick={() => handleExport('drawio')} className="w-full text-left px-3 py-1.5 transition-colors text-[12px] flex items-center gap-2 hover:bg-[var(--bg-elevated)]" style={{ color: 'var(--text-primary)' }}>
+                    <Share2 size={14} className="text-[#ff9500]" /> Export draw.io (XML)
+                  </button>
+                  
+                  <div className="h-px bg-white/5 my-1 mx-2" />
+                  <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Document</div>
+                  <button onClick={() => handleExport('report')} className="w-full text-left px-3 py-1.5 transition-colors text-[14px] font-semibold flex items-center gap-2 hover:bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-primary)' }}>
+                    <FileText size={16} /> Download Report (DOCX)
                   </button>
                 </div>
               )}
